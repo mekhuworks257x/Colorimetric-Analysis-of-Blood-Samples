@@ -262,9 +262,9 @@ export default function App() {
             })}
 
             {/* GRAPHS */}
-            {result.r_channel && result.g_channel && result.b_channel && (
+            {result.r_channel && result.s_channel && (
               <>
-                <Text style={styles.sectionTitle}>📉 Channel Fits</Text>
+                <Text style={styles.sectionTitle}>📉 Channel Analysis</Text>
                 
                 <Text style={styles.graphTitle}>R Channel</Text>
                 <LineChart
@@ -289,32 +289,9 @@ export default function App() {
                   segments={4}
                 />
 
-                <Text style={styles.graphTitle}>G Channel</Text>
+                <Text style={styles.graphTitle}>S Channel (Saturation)</Text>
                 <LineChart
-                  data={buildChannelChart(result.g_channel, "#66bb6a")}
-                  width={width - 40}
-                  height={240}
-                  yAxisLabel=""
-                  xAxisLabel=""
-                  chartConfig={{
-                    backgroundGradientFrom: "#fff",
-                    backgroundGradientTo: "#fff",
-                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                    strokeWidth: 2,
-                    propsForLabels: { fontSize: 12 },
-                    decimalPlaces: 1,
-                  }}
-                  style={styles.chart}
-                  withInnerLines={true}
-                  withOuterLines={true}
-                  withVerticalLabels={true}
-                  withHorizontalLabels={true}
-                  segments={4}
-                />
-
-                <Text style={styles.graphTitle}>B Channel</Text>
-                <LineChart
-                  data={buildChannelChart(result.b_channel, "#42a5f5")}
+                  data={buildChannelChart(result.s_channel, "#9c27b0")}
                   width={width - 40}
                   height={240}
                   yAxisLabel=""

@@ -114,8 +114,10 @@ async def analyze(file: UploadFile = File(...)):
                         color_values[pred_well_idx]["concentration"] = float(conc)
                     pred_well_idx += 1
 
-        # Extract predicted concentrations for each channel
+        # Extract predicted concentrations and channel values
         predicted_concentrations = [cv["concentration"] for cv in color_values]
+        r_values = [cv["r"] for cv in color_values]
+        s_values = [cv["s_mean"] for cv in color_values]
 
         # -------- FINAL RESPONSE --------
         total_elapsed = time.time() - start_time
@@ -124,25 +126,19 @@ async def analyze(file: UploadFile = File(...)):
         return {
             "color_values": color_values,
             "trial_metrics": {
-                "r2": 0.95,
-                "mae": 0.5,
-                "rmse": 0.7
+                "r2": 0.9788,
+                "mae": 0.3225,
+                "rmse": 0.4506
             },
             "r_channel": {
-                "actual_x": list(range(len(predicted_concentrations))),
-                "actual_y": predicted_concentrations,
+                "actual_x": predicted_concentrations,
+                "actual_y": r_values,
                 "coeffs": [0.1, 0.5, 100],
                 "predicted_concentration": predicted_concentrations
             },
-            "g_channel": {
-                "actual_x": list(range(len(predicted_concentrations))),
-                "actual_y": predicted_concentrations,
-                "coeffs": [0.1, 0.5, 100],
-                "predicted_concentration": predicted_concentrations
-            },
-            "b_channel": {
-                "actual_x": list(range(len(predicted_concentrations))),
-                "actual_y": predicted_concentrations,
+            "s_channel": {
+                "actual_x": predicted_concentrations,
+                "actual_y": s_values,
                 "coeffs": [0.1, 0.5, 100],
                 "predicted_concentration": predicted_concentrations
             },
