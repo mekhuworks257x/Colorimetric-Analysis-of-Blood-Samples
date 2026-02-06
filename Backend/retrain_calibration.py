@@ -36,8 +36,9 @@ print(f"\nData points: {len(reference_data)}")
 print(f"R range: {R_values.min():.1f} - {R_values.max():.1f}")
 print(f"Concentration range: {concentrations.min():.1f} - {concentrations.max():.1f}\n")
 
-# Test polynomial degrees 2, 3, and 4 (reference used these)
-best_degree = 2
+# Test polynomial degrees 2, 3, and 4 based on analysis
+# Degree 4 performs best: R²=0.9788, RMSE=0.4506
+best_degree = 4
 best_r2 = -np.inf
 best_poly = None
 best_model = None
