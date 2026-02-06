@@ -3,11 +3,11 @@ import * as ImageManipulator from "expo-image-manipulator";
 
 // Get backend URL from environment or use default
 // For iOS/Android apps, use the machine's IP address instead of localhost
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL || "http://10.1.28.38:8001";
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL || "http://10.1.21.126:8001";
 
 const API = axios.create({
   baseURL: BACKEND_URL,
-  timeout: 30000,
+  timeout: 120000,  // Increased from 30s to 2 minutes for image processing
 });
 
 export async function analyzeImageColors(imageUri) {

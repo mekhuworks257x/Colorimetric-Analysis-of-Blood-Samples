@@ -4,13 +4,7 @@
     "slug": "color-analyzer",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/logo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#DC143C"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -23,10 +17,7 @@
       }
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/logo.png",
-        "backgroundColor": "#DC143C"
-      },
+      "backgroundColor": "#DC143C",
       "package": "com.coloranalyzer.app",
       "permissions": [
         "CAMERA",
@@ -36,7 +27,6 @@
       "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
     "plugins": [

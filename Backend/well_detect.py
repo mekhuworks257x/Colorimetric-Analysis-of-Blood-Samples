@@ -44,10 +44,14 @@ def contours_to_circles(contours, area_min=MIN_BLOB_AREA, circ_min=0.3):
 def hough_fallback(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray,(5,5),1.2)
+    
+    # Optimize: Use faster Hough with relaxed parameters
     circles = cv2.HoughCircles(
         blur, cv2.HOUGH_GRADIENT,
-        dp=1.2, minDist=24,
-        param1=80, param2=26,
+        dp=2.0,  # Increased from 1.2 for faster processing
+        minDist=24,
+        param1=50,  # Reduced from 80
+        param2=20,  # Reduced from 26
         minRadius=12, maxRadius=60
     )
     if circles is None:
@@ -72,6 +76,17 @@ def cluster_rows(blobs):
 # ==== MAIN DETECTION FUNCTION ====
 
 def detect_rows_and_wells(img):
+    # Optimize: downscale image for faster processing
+    original_height, original_width = img.shape[:2]
+    scale_factor = 1.0
+    
+    # If image is very large, downscale it
+    if original_width > 2000 or original_height > 2000:
+        scale_factor = max(original_width, original_height) / 1500.0
+        new_width = int(original_width / scale_factor)
+        new_height = int(original_height / scale_factor)
+        img = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_AREA)
+    
     hsv = to_hsv(img)
     mask = mask_from_hsv(hsv)
     clean = morphological_clean(mask)
@@ -82,5 +97,9 @@ def detect_rows_and_wells(img):
     if len(blobs) < EXPECTED_COLS:
         blobs += hough_fallback(img)
 
+    # Scale coordinates back if we downscaled
+    if scale_factor > 1.0:
+        blobs = [(int(x*scale_factor), int(y*scale_factor), int(r*scale_factor)) for x, y, r in blobs]
+    
     blobs = sorted(set(blobs), key=lambda b:(b[1], b[0]))
     return cluster_rows(blobs)

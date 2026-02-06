@@ -24,25 +24,57 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 
   const pickImage = async () => {
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-    });
+    try {
+      // Request photo library permissions
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (!permission.granted) {
+        Alert.alert(
+          "Permission Required",
+          "The app needs permission to access your photo library to analyze images."
+        );
+        return;
+      }
 
-    if (!res.canceled) {
-      setImage(res.assets[0].uri);
-      analyze(res.assets[0].uri);
+      const res = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: 'images',
+        quality: 1,
+      });
+
+      if (!res.canceled) {
+        setImage(res.assets[0].uri);
+        analyze(res.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Failed to pick image from gallery");
     }
   };
 
   const takePhoto = async () => {
-    const res = await ImagePicker.launchCameraAsync({
-      quality: 1,
-    });
+    try {
+      // Request camera permissions
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      
+      if (!permission.granted) {
+        Alert.alert(
+          "Permission Required",
+          "The app needs permission to access your camera to take photos."
+        );
+        return;
+      }
 
-    if (!res.canceled) {
-      setImage(res.assets[0].uri);
-      analyze(res.assets[0].uri);
+      const res = await ImagePicker.launchCameraAsync({
+        quality: 1,
+      });
+
+      if (!res.canceled) {
+        setImage(res.assets[0].uri);
+        analyze(res.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Error taking photo:", error);
+      Alert.alert("Error", "Failed to take photo");
     }
   };
 
@@ -79,7 +111,7 @@ export default function App() {
     const ys = Array.isArray(channel?.actual_y) ? channel.actual_y : [];
     const coeffs = Array.isArray(channel?.coeffs) ? channel.coeffs : [];
     const fitAtActual = xs.map((x) => evalPoly(coeffs, x));
-    const labels = xs.map((x, i) => (i % 2 === 0 ? x.toFixed(1) : ""));
+    const labels = xs.map((x, i) => (i % 6 === 0 ? x.toFixed(1) : ""));
 
     return {
       labels,
@@ -145,33 +177,6 @@ export default function App() {
         {/* RESULTS */}
         {result && (
           <View style={styles.resultBox}>
-            {/* COLOR SPACE VALUES TABLE */}
-            <Text style={styles.sectionTitle}>📊 Color Space Values</Text>
-            <ScrollView horizontal style={styles.tableContainer}>
-              <View>
-                <View style={styles.tableHeader}>
-                  <Text style={[styles.tableCell, styles.tableCellSmall]}>Well</Text>
-                  <Text style={[styles.tableCell, styles.tableCellSmall]}>Conc</Text>
-                  <Text style={[styles.tableCell, styles.tableCellSmall]}>R</Text>
-                  <Text style={[styles.tableCell, styles.tableCellSmall]}>G</Text>
-                  <Text style={[styles.tableCell, styles.tableCellSmall]}>B</Text>
-                  <Text style={[styles.tableCell, styles.tableCellSmall]}>RGB</Text>
-                  <Text style={[styles.tableCell, styles.tableCellSmall]}>S</Text>
-                </View>
-                {result.color_values.map((row, idx) => (
-                  <View key={idx} style={styles.tableRow}>
-                    <Text style={[styles.tableCell, styles.tableCellSmall]}>{row.well}</Text>
-                    <Text style={[styles.tableCell, styles.tableCellSmall]}>{row.concentration.toFixed(1)}</Text>
-                    <Text style={[styles.tableCell, styles.tableCellSmall]}>{row.r.toFixed(1)}</Text>
-                    <Text style={[styles.tableCell, styles.tableCellSmall]}>{row.g.toFixed(1)}</Text>
-                    <Text style={[styles.tableCell, styles.tableCellSmall]}>{row.b.toFixed(1)}</Text>
-                    <Text style={[styles.tableCell, styles.tableCellSmall]}>{row.rgb_mean.toFixed(1)}</Text>
-                    <Text style={[styles.tableCell, styles.tableCellSmall]}>{row.s_mean.toFixed(1)}</Text>
-                  </View>
-                ))}
-              </View>
-            </ScrollView>
-
             {/* TRIAL METRICS */}
             <Text style={styles.sectionTitle}>📈 Trial Metrics</Text>
             <View style={styles.metricsContainer}>
@@ -189,113 +194,150 @@ export default function App() {
               </View>
             </View>
 
-            {/* GRAPHS */}
-            <Text style={styles.sectionTitle}>📉 Channel Fits</Text>
-            
-            <Text style={styles.graphTitle}>R Channel</Text>
-            <LineChart
-              data={buildChannelChart(result.r_channel, "#ff6b6b")}
-              width={width - 30}
-              height={220}
-              yAxisLabel=""
-              xAxisLabel=""
-              chartConfig={{
-                backgroundGradientFrom: "#fff",
-                backgroundGradientTo: "#fff",
-                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                strokeWidth: 2,
-                propsForLabels: { fontSize: 10 },
-                decimalPlaces: 0,
-              }}
-              style={styles.chart}
-            />
+            {/* RESULTS BY TRIAL */}
+            {[1, 2, 3].map((trialNum) => {
+              const trialWells = result.color_values.filter(cv => cv.trial === trialNum);
+              if (trialWells.length === 0) return null;
+              
+              return (
+                <View key={trialNum} style={styles.trialSection}>
+                  <Text style={styles.trialTitle}>🧪 Trial {trialNum}</Text>
+                  
+                  {/* COLOR VALUES TABLE */}
+                  <Text style={styles.subsectionTitle}>Color Values</Text>
+                  <ScrollView horizontal style={styles.tableContainer}>
+                    <View>
+                      <View style={styles.tableHeader}>
+                        <Text style={styles.tableCell}>Well</Text>
+                        <Text style={styles.tableCell}>R</Text>
+                        <Text style={styles.tableCell}>G</Text>
+                        <Text style={styles.tableCell}>B</Text>
+                        <Text style={styles.tableCell}>RGB</Text>
+                        <Text style={styles.tableCell}>S</Text>
+                      </View>
+                      {trialWells.map((row, idx) => (
+                        <View key={idx} style={styles.tableRow}>
+                          <Text style={styles.tableCell}>{row.well}</Text>
+                          <Text style={styles.tableCell}>{row.r.toFixed(1)}</Text>
+                          <Text style={styles.tableCell}>{row.g.toFixed(1)}</Text>
+                          <Text style={styles.tableCell}>{row.b.toFixed(1)}</Text>
+                          <Text style={styles.tableCell}>{row.rgb_mean.toFixed(1)}</Text>
+                          <Text style={styles.tableCell}>{row.s_mean.toFixed(1)}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </ScrollView>
 
-            <Text style={styles.graphTitle}>G Channel</Text>
-            <LineChart
-              data={buildChannelChart(result.g_channel, "#66bb6a")}
-              width={width - 30}
-              height={220}
-              yAxisLabel=""
-              xAxisLabel=""
-              chartConfig={{
-                backgroundGradientFrom: "#fff",
-                backgroundGradientTo: "#fff",
-                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                strokeWidth: 2,
-                propsForLabels: { fontSize: 10 },
-                decimalPlaces: 0,
-              }}
-              style={styles.chart}
-            />
-
-            <Text style={styles.graphTitle}>B Channel</Text>
-            <LineChart
-              data={buildChannelChart(result.b_channel, "#42a5f5")}
-              width={width - 30}
-              height={220}
-              yAxisLabel=""
-              xAxisLabel=""
-              chartConfig={{
-                backgroundGradientFrom: "#fff",
-                backgroundGradientTo: "#fff",
-                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                strokeWidth: 2,
-                propsForLabels: { fontSize: 10 },
-                decimalPlaces: 0,
-              }}
-              style={styles.chart}
-            />
-
-            <Text style={styles.graphTitle}>RGB Mean Channel</Text>
-            <LineChart
-              data={buildChannelChart(result.rgb_mean_channel, "#ffa726")}
-              width={width - 30}
-              height={220}
-              yAxisLabel=""
-              xAxisLabel=""
-              chartConfig={{
-                backgroundGradientFrom: "#fff",
-                backgroundGradientTo: "#fff",
-                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                strokeWidth: 2,
-                propsForLabels: { fontSize: 10 },
-                decimalPlaces: 0,
-              }}
-              style={styles.chart}
-            />
-
-            {/* PREDICTED VALUES */}
-            <Text style={styles.sectionTitle}>🎯 Predicted Concentrations</Text>
-            <ScrollView horizontal style={styles.tableContainer}>
-              <View>
-                <View style={styles.tableHeader}>
-                  <Text style={[styles.tableCell, styles.tableCellSmall]}>Well</Text>
-                  <Text style={[styles.tableCell, styles.tableCellSmall]}>True Conc</Text>
-                  <Text style={[styles.tableCell, styles.tableCellSmall]}>Pred from R</Text>
-                  <Text style={[styles.tableCell, styles.tableCellSmall]}>Pred from G</Text>
-                  <Text style={[styles.tableCell, styles.tableCellSmall]}>Pred from B</Text>
-                  <Text style={[styles.tableCell, styles.tableCellSmall]}>Pred from RGB</Text>
+                  {/* CONCENTRATIONS TABLE */}
+                  <Text style={styles.subsectionTitle}>Predicted Concentrations</Text>
+                  <ScrollView horizontal style={styles.tableContainer}>
+                    <View>
+                      <View style={styles.tableHeader}>
+                        <Text style={styles.tableCell}>Well</Text>
+                        <Text style={styles.tableCell}>Conc</Text>
+                        <Text style={styles.tableCell}>From R</Text>
+                        <Text style={styles.tableCell}>From G</Text>
+                        <Text style={styles.tableCell}>From B</Text>
+                      </View>
+                      {trialWells.map((row, idx) => {
+                        const globalIdx = result.color_values.indexOf(row);
+                        return (
+                          <View key={idx} style={styles.tableRow}>
+                            <Text style={styles.tableCell}>{row.well}</Text>
+                            <Text style={styles.tableCell}>{row.concentration.toFixed(2)}</Text>
+                            <Text style={styles.tableCell}>
+                              {result.r_channel?.predicted_concentration?.[globalIdx]?.toFixed(2) || "N/A"}
+                            </Text>
+                            <Text style={styles.tableCell}>
+                              {result.g_channel?.predicted_concentration?.[globalIdx]?.toFixed(2) || "N/A"}
+                            </Text>
+                            <Text style={styles.tableCell}>
+                              {result.b_channel?.predicted_concentration?.[globalIdx]?.toFixed(2) || "N/A"}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </ScrollView>
                 </View>
-                {result.color_values.map((row, idx) => (
-                  <View key={idx} style={styles.tableRow}>
-                    <Text style={[styles.tableCell, styles.tableCellSmall]}>{row.well}</Text>
-                    <Text style={[styles.tableCell, styles.tableCellSmall]}>{row.concentration.toFixed(2)}</Text>
-                    <Text style={[styles.tableCell, styles.tableCellSmall]}>
-                      {result.r_channel.predicted_concentration[idx]?.toFixed(2) || "N/A"}
-                    </Text>
-                    <Text style={[styles.tableCell, styles.tableCellSmall]}>
-                      {result.g_channel.predicted_concentration[idx]?.toFixed(2) || "N/A"}
-                    </Text>
-                    <Text style={[styles.tableCell, styles.tableCellSmall]}>
-                      {result.b_channel.predicted_concentration[idx]?.toFixed(2) || "N/A"}
-                    </Text>
-                    <Text style={[styles.tableCell, styles.tableCellSmall]}>
-                      {result.rgb_mean_channel.predicted_concentration[idx]?.toFixed(2) || "N/A"}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </ScrollView>
+              );
+            })}
+
+            {/* GRAPHS */}
+            {result.r_channel && result.g_channel && result.b_channel && (
+              <>
+                <Text style={styles.sectionTitle}>📉 Channel Fits</Text>
+                
+                <Text style={styles.graphTitle}>R Channel</Text>
+                <LineChart
+                  data={buildChannelChart(result.r_channel, "#ff6b6b")}
+                  width={width - 40}
+                  height={240}
+                  yAxisLabel=""
+                  xAxisLabel=""
+                  chartConfig={{
+                    backgroundGradientFrom: "#fff",
+                    backgroundGradientTo: "#fff",
+                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                    strokeWidth: 2,
+                    propsForLabels: { fontSize: 12 },
+                    decimalPlaces: 1,
+                  }}
+                  style={styles.chart}
+                  withInnerLines={true}
+                  withOuterLines={true}
+                  withVerticalLabels={true}
+                  withHorizontalLabels={true}
+                  segments={4}
+                />
+
+                <Text style={styles.graphTitle}>G Channel</Text>
+                <LineChart
+                  data={buildChannelChart(result.g_channel, "#66bb6a")}
+                  width={width - 40}
+                  height={240}
+                  yAxisLabel=""
+                  xAxisLabel=""
+                  chartConfig={{
+                    backgroundGradientFrom: "#fff",
+                    backgroundGradientTo: "#fff",
+                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                    strokeWidth: 2,
+                    propsForLabels: { fontSize: 12 },
+                    decimalPlaces: 1,
+                  }}
+                  style={styles.chart}
+                  withInnerLines={true}
+                  withOuterLines={true}
+                  withVerticalLabels={true}
+                  withHorizontalLabels={true}
+                  segments={4}
+                />
+
+                <Text style={styles.graphTitle}>B Channel</Text>
+                <LineChart
+                  data={buildChannelChart(result.b_channel, "#42a5f5")}
+                  width={width - 40}
+                  height={240}
+                  yAxisLabel=""
+                  xAxisLabel=""
+                  chartConfig={{
+                    backgroundGradientFrom: "#fff",
+                    backgroundGradientTo: "#fff",
+                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                    strokeWidth: 2,
+                    propsForLabels: { fontSize: 12 },
+                    decimalPlaces: 1,
+                  }}
+                  style={styles.chart}
+                  withInnerLines={true}
+                  withOuterLines={true}
+                  withVerticalLabels={true}
+                  withHorizontalLabels={true}
+                  segments={4}
+                />
+              </>
+            )}
 
             <TouchableOpacity 
               style={[styles.button, styles.secondaryButton]}
@@ -379,6 +421,29 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: "#c4161c",
   },
+  trialSection: {
+    marginTop: 20,
+    marginBottom: 20,
+    padding: 15,
+    backgroundColor: "#fafafa",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  trialTitle: {
+    fontSize: 17,
+    fontWeight: "bold",
+    marginBottom: 12,
+    color: "#c4161c",
+    textAlign: "center",
+  },
+  subsectionTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    marginTop: 10,
+    marginBottom: 8,
+    color: "#444",
+  },
   tableContainer: {
     marginVertical: 10,
     borderWidth: 1,
@@ -398,15 +463,15 @@ const styles = StyleSheet.create({
     borderBottomColor: "#f0f0f0",
   },
   tableCell: {
-    padding: 8,
-    fontSize: 12,
+    padding: 10,
+    fontSize: 13,
     fontWeight: "600",
     color: "#333",
     textAlign: "center",
   },
   tableCellSmall: {
-    minWidth: 50,
-    width: 50,
+    minWidth: 55,
+    width: 55,
   },
   metricsContainer: {
     flexDirection: "row",
