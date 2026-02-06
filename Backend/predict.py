@@ -2,22 +2,26 @@ import joblib
 import numpy as np
 import os
 
-# Load trained calibration models with proper path handling
+# Load trained calibration models
 script_dir = os.path.dirname(os.path.abspath(__file__))
 poly = joblib.load(os.path.join(script_dir, "calibration_poly.pkl"))
 model = joblib.load(os.path.join(script_dir, "calibration_model.pkl"))
 
 def predict_concentrations(features):
     """
+    Predict concentrations from R values using trained polynomial regression model.
+    
     features = [
         {
             "trial": 1,
-            "R_values": [r1, r2, r3, ...]
+            "R_values": [r1, r2, r3, ...]  (12 values per trial)
         },
         ...
     ]
+    
+    Returns predictions in same format as training.
+    Predicts concentration for all wells (no control wells skipped).
     """
-
     all_predictions = []
 
     for trial_data in features:
@@ -29,11 +33,13 @@ def predict_concentrations(features):
         for R in R_values:
             # Ensure scalar float
             R = float(R)
-
+            
+            # Transform using polynomial features and predict
             X = poly.transform([[R]])
             concentration = model.predict(X)[0]
-
-            trial_predictions.append(round(float(concentration), 3))
+            
+            # Round to 2 decimal places for readability
+            trial_predictions.append(round(float(concentration), 2))
 
         all_predictions.append({
             "trial": trial_id,

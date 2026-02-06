@@ -228,31 +228,29 @@ export default function App() {
                     </View>
                   </ScrollView>
 
-                  {/* CONCENTRATIONS TABLE */}
+                  {/* CONCENTRATIONS TABLE - Reference Format */}
                   <Text style={styles.subsectionTitle}>Predicted Concentrations</Text>
                   <ScrollView horizontal style={styles.tableContainer}>
                     <View>
                       <View style={styles.tableHeader}>
                         <Text style={styles.tableCell}>Well</Text>
-                        <Text style={styles.tableCell}>Conc</Text>
-                        <Text style={styles.tableCell}>From R</Text>
-                        <Text style={styles.tableCell}>From G</Text>
-                        <Text style={styles.tableCell}>From B</Text>
+                        <Text style={styles.tableCell}>R Value</Text>
+                        <Text style={styles.tableCell}>Pred Conc</Text>
                       </View>
                       {trialWells.map((row, idx) => {
                         const globalIdx = result.color_values.indexOf(row);
+                        const predConc = result.r_channel?.predicted_concentration?.[globalIdx];
+                        // Renumber as 1-12 within each trial (was 0-11 in trialWells array)
+                        const localWellNumber = idx + 1;
+                        
                         return (
                           <View key={idx} style={styles.tableRow}>
-                            <Text style={styles.tableCell}>{row.well}</Text>
-                            <Text style={styles.tableCell}>{row.concentration.toFixed(2)}</Text>
+                            <Text style={styles.tableCell}>{localWellNumber}</Text>
+                            <Text style={styles.tableCell}>{row.r.toFixed(1)}</Text>
                             <Text style={styles.tableCell}>
-                              {result.r_channel?.predicted_concentration?.[globalIdx]?.toFixed(2) || "N/A"}
-                            </Text>
-                            <Text style={styles.tableCell}>
-                              {result.g_channel?.predicted_concentration?.[globalIdx]?.toFixed(2) || "N/A"}
-                            </Text>
-                            <Text style={styles.tableCell}>
-                              {result.b_channel?.predicted_concentration?.[globalIdx]?.toFixed(2) || "N/A"}
+                              {predConc !== undefined 
+                                ? predConc.toFixed(2) 
+                                : "N/A"}
                             </Text>
                           </View>
                         );

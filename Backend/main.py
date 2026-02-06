@@ -23,11 +23,14 @@ def extract_color_values_from_image(img, rows):
     color_values = []
     well_counter = 0
     
+    # Use reference notebook scale
+    INNER_SCALE = 0.72
+    
     for trial_idx, row in enumerate(rows):
         for x, y, r in row:
             well_counter += 1
             # Extract inner well region
-            inner_r = max(1, int(r * 0.72))
+            inner_r = max(1, int(r * INNER_SCALE))
             mask = np.zeros(img.shape[:2], dtype=np.uint8)
             cv2.circle(mask, (x, y), inner_r, 255, -1)
             

@@ -15,6 +15,7 @@ A mobile application for analyzing colorimetric blood samples using computer vis
 ## 🏗️ Architecture
 
 ### Backend (Python/FastAPI)
+
 - **FastAPI** server running on port 8001
 - **OpenCV** for image processing and well detection
 - **NumPy** for numerical computations
@@ -22,6 +23,7 @@ A mobile application for analyzing colorimetric blood samples using computer vis
 - Image optimization for faster processing (downscales large images)
 
 ### Frontend (React Native/Expo)
+
 - **React Native** with Expo for cross-platform mobile development
 - **expo-image-picker** for camera and gallery access
 - **react-native-chart-kit** for data visualization
@@ -30,6 +32,7 @@ A mobile application for analyzing colorimetric blood samples using computer vis
 ## 🛠️ Technologies Used
 
 **Backend:**
+
 - Python 3.x
 - FastAPI
 - OpenCV (cv2)
@@ -38,6 +41,7 @@ A mobile application for analyzing colorimetric blood samples using computer vis
 - Uvicorn (ASGI server)
 
 **Frontend:**
+
 - React Native 0.81.5
 - Expo SDK
 - React 19.1.0
@@ -51,15 +55,18 @@ A mobile application for analyzing colorimetric blood samples using computer vis
 Before running this project, make sure you have the following installed:
 
 ### Backend Requirements
+
 - **Python 3.8+** ([Download Python](https://www.python.org/downloads/))
 - **pip** (Python package manager)
 
 ### Frontend Requirements
+
 - **Node.js 18+** ([Download Node.js](https://nodejs.org/))
 - **npm** or **yarn** (comes with Node.js)
 - **Expo CLI** (will be installed via npm)
 
 ### Mobile Testing
+
 - **Expo Go** app on your iOS/Android device, OR
 - **Android Studio** (for Android Emulator), OR
 - **Xcode** (for iOS Simulator on Mac)
@@ -83,6 +90,7 @@ pip install -r requirements.txt
 ```
 
 The `requirements.txt` includes:
+
 - fastapi
 - uvicorn
 - opencv-python
@@ -116,6 +124,7 @@ npm install
 **Important**: Update the backend URL in `ColorAnalyzerApp/services/colorAnalyzer.js`
 
 Find your computer's local IP address:
+
 - **Windows**: Open Command Prompt and run `ipconfig` (look for IPv4 Address)
 - **Mac/Linux**: Open Terminal and run `ifconfig` or `ip addr` (look for inet address)
 
@@ -147,12 +156,14 @@ This will open the Expo DevTools in your browser.
 #### Option B: Using Emulator
 
 **Android Emulator:**
+
 ```bash
 # Press 'a' in the Expo terminal to run on Android
 npx expo start --android
 ```
 
 **iOS Simulator (Mac only):**
+
 ```bash
 # Press 'i' in the Expo terminal to run on iOS
 npx expo start --ios
@@ -176,6 +187,7 @@ npx expo start --ios
 ### Backend Configuration
 
 **Port**: Default is 8001. To change:
+
 ```bash
 python -m uvicorn main:app --host 0.0.0.0 --port YOUR_PORT
 ```
@@ -185,8 +197,9 @@ python -m uvicorn main:app --host 0.0.0.0 --port YOUR_PORT
 ### Frontend Configuration
 
 **API Timeout**: Default is 120 seconds. Modify in `ColorAnalyzerApp/services/colorAnalyzer.js`:
+
 ```javascript
-timeout: 120000  // milliseconds
+timeout: 120000; // milliseconds
 ```
 
 **Backend URL**: Update in `ColorAnalyzerApp/services/colorAnalyzer.js` if your IP changes.
@@ -219,12 +232,14 @@ CALOBLOOD/
 ### Backend Issues
 
 **Issue**: `ModuleNotFoundError`
+
 ```bash
 # Solution: Install missing dependencies
 pip install -r requirements.txt
 ```
 
 **Issue**: Port 8001 already in use
+
 ```bash
 # Solution: Kill the process or use a different port
 # Windows:
@@ -238,16 +253,19 @@ lsof -ti:8001 | xargs kill -9
 ### Frontend Issues
 
 **Issue**: Cannot connect to backend
+
 - Verify your phone and computer are on the same Wi-Fi network
 - Check that the IP address in `colorAnalyzer.js` matches your computer's IP
 - Ensure the backend server is running
 - Try disabling your firewall temporarily
 
 **Issue**: `expo-image-picker` permissions denied
+
 - The app will request permissions automatically
 - If denied, go to your phone's Settings → App Permissions → Allow Camera/Photos
 
 **Issue**: App crashes or freezes
+
 - Clear the Expo cache: `npx expo start --clear`
 - Reinstall dependencies: `rm -rf node_modules && npm install`
 
