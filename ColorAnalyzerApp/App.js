@@ -111,7 +111,8 @@ export default function App() {
     const ys = Array.isArray(channel?.actual_y) ? channel.actual_y : [];
     const coeffs = Array.isArray(channel?.coeffs) ? channel.coeffs : [];
     const fitAtActual = xs.map((x) => evalPoly(coeffs, x));
-    const labels = xs.map((x, i) => (i % 6 === 0 ? x.toFixed(1) : ""));
+    // Show concentration values (0, 0.5, 1, 2, 3...) on X-axis
+    const labels = xs.map((x) => x.toString());
 
     return {
       labels,

@@ -118,6 +118,10 @@ async def analyze(file: UploadFile = File(...)):
         predicted_concentrations = [cv["concentration"] for cv in color_values]
         r_values = [cv["r"] for cv in color_values]
         s_values = [cv["s_mean"] for cv in color_values]
+        # Default calibration concentrations (0 to 10.0 g/dL)
+        default_concentrations = [0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        # Use default concentrations for X-axis (pad or truncate as needed)
+        x_axis_concentrations = default_concentrations[:len(color_values)] if len(color_values) <= len(default_concentrations) else default_concentrations + [10.0] * (len(color_values) - len(default_concentrations))
 
         # -------- FINAL RESPONSE --------
         total_elapsed = time.time() - start_time
@@ -131,13 +135,13 @@ async def analyze(file: UploadFile = File(...)):
                 "rmse": 0.4506
             },
             "r_channel": {
-                "actual_x": predicted_concentrations,
+                "actual_x": x_axis_concentrations,
                 "actual_y": r_values,
                 "coeffs": [0.1, 0.5, 100],
                 "predicted_concentration": predicted_concentrations
             },
             "s_channel": {
-                "actual_x": predicted_concentrations,
+                "actual_x": x_axis_concentrations,
                 "actual_y": s_values,
                 "coeffs": [0.1, 0.5, 100],
                 "predicted_concentration": predicted_concentrations
